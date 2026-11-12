@@ -1,6 +1,6 @@
 """Порядок работы пары решателей: вслепую, спор, правило «дешевле отменить»."""
 
-from ideagraph_decider import brief, manifest, resolve, same
+from idea_graph_decider import brief, manifest, resolve, same
 
 QUESTION = {
     "question": "Нужна ли оплата в первой версии?", "comment": "", "recommended": 1, "reason": "проще",

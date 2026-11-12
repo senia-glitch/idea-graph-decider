@@ -3,7 +3,7 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "ideagraph-decider"
+name = "idea-graph-decider"
 version = "0.1.0"
 description = "Пакет-решатель: отвечает на вопросы пакетов вместо человека, пара со спором"
 readme = "README.md"
@@ -13,14 +13,14 @@ dependencies = []
 [project.optional-dependencies]
 test = ["pytest"]
 
-[project.entry-points."ideagraph.packages"]
-decider = "ideagraph_decider:manifest"
+[project.entry-points."idea_graph.packages"]
+decider = "idea_graph_decider:manifest"
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.setuptools.package-data]
-ideagraph_decider = ["*.md"]
+idea_graph_decider = ["*.md"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
