@@ -30,8 +30,13 @@ def brief(question: dict, env) -> str:
     for index, option in enumerate(question["options"], 1):
         tail = f" — {option['consequence']}" if option.get("consequence") else ""
         lines.append(f"{index}. {option['title']}{tail}")
-    if question.get("recommended"):
-        lines.append(f"Пакет рекомендует вариант {question['recommended']}"
+    if question.get("multiple"):
+        lines.append("Варианты не исключают друг друга: можно выбрать несколько (choice=multi, options=[номера], "
+                     "при необходимости text со своим дополнением), один или своё решение.")
+    recs = question.get("recommended_list") or ([question["recommended"]] if question.get("recommended") else [])
+    if recs:
+        lines.append("Пакет рекомендует " + ("варианты " if len(recs) > 1 else "вариант ")
+                     + ", ".join(str(r) for r in recs)
                      + (f": {question['reason']}" if question.get("reason") else "")
                      + " Ты не обязан соглашаться.")
     cards = list(dict.fromkeys(question.get("cards", []) + question.get("revisits", [])))
@@ -57,6 +62,8 @@ def describe(question: dict, decision: dict) -> str:
         return f"вариант {chosen['index']} — «{chosen['value']}»"
     if chosen["type"] == "custom":
         return f"своё решение: «{chosen['value']}»"
+    if chosen["type"] == "multi":
+        return "варианты " + ", ".join(str(i) for i in chosen["indexes"]) + f" — {chosen['value']}"
     return "отклонить все варианты"
 
 
@@ -66,6 +73,8 @@ def same(first: dict, second: dict) -> bool:
         return False
     if a["type"] == "option":
         return a["index"] == b["index"]
+    if a["type"] == "multi":
+        return a["indexes"] == b["indexes"] and " ".join(a["text"].lower().split()) == " ".join(b["text"].lower().split())
     if a["type"] == "custom":
         return " ".join(a["value"].lower().split()) == " ".join(b["value"].lower().split())
     return True

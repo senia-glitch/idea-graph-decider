@@ -107,3 +107,27 @@ def test_same_and_manifest():
     assert same(custom("Только  веб"), custom("только веб")) and not same(custom("a"), option(1))
     m = manifest()
     assert m["kind"] == "decider" and callable(m["resolve"]) and "undo_cost" in m["skill"]
+
+
+def test_multi_choice_description_and_comparison():
+    from idea_graph_decider import describe
+    a = {"chosen": {"type": "multi", "indexes": [1, 3], "values": ["А", "В"], "text": "", "value": "А; В"}}
+    b = {"chosen": {"type": "multi", "indexes": [1, 3], "values": ["А", "В"], "text": "", "value": "А; В"}}
+    c = {"chosen": {"type": "multi", "indexes": [1], "values": ["А"], "text": "", "value": "А"}}
+    assert same(a, b) and not same(a, c)
+    assert "варианты 1, 3" in describe({}, a)
+
+
+def test_brief_mentions_multiple_and_recommendations():
+    question = {"question": "Что учесть?", "options": [{"title": "А"}, {"title": "Б"}, {"title": "В"}], "comment": "",
+                "multiple": True, "recommended": 1, "recommended_list": [1, 3], "reason": "важнее",
+                "cards": [], "revisits": []}
+
+    class Env:
+        def card(self, _): return ""
+        def outline(self): return ""
+        def past_decisions(self): return ""
+        def deleted(self): return ""
+
+    text = brief(question, Env())
+    assert "multi" in text and "варианты 1, 3" in text
