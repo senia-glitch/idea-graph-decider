@@ -30,10 +30,9 @@ def brief(question: dict, env) -> str:
     for index, option in enumerate(question["options"], 1):
         tail = f" — {option['consequence']}" if option.get("consequence") else ""
         lines.append(f"{index}. {option['title']}{tail}")
-    if question.get("multiple"):
-        lines.append("Варианты не исключают друг друга: можно выбрать несколько (choice=multi, options=[номера], "
-                     "при необходимости text со своим дополнением), один или своё решение.")
-    recs = question.get("recommended_list") or ([question["recommended"]] if question.get("recommended") else [])
+    lines.append("Можно выбрать любое число вариантов, ни одного или выбрать и дописать своё: "
+                 "choice=choice, options=[номера], при необходимости text. Ни один не нужен — choice=rejected.")
+    recs = question.get("recommended") or []
     if recs:
         lines.append("Пакет рекомендует " + ("варианты " if len(recs) > 1 else "вариант ")
                      + ", ".join(str(r) for r in recs)
@@ -58,25 +57,23 @@ def brief(question: dict, env) -> str:
 
 def describe(question: dict, decision: dict) -> str:
     chosen = decision["chosen"]
-    if chosen["type"] == "option":
-        return f"вариант {chosen['index']} — «{chosen['value']}»"
-    if chosen["type"] == "custom":
-        return f"своё решение: «{chosen['value']}»"
-    if chosen["type"] == "multi":
-        return "варианты " + ", ".join(str(i) for i in chosen["indexes"]) + f" — {chosen['value']}"
-    return "отклонить все варианты"
+    if chosen["type"] != "choice":
+        return "отклонить все варианты"
+    parts = []
+    if chosen["indexes"]:
+        parts.append("вариант " if len(chosen["indexes"]) == 1 else "варианты ")
+        parts[0] += ", ".join(str(i) for i in chosen["indexes"]) + " — " + "; ".join(f"«{v}»" for v in chosen["values"])
+    if chosen.get("text"):
+        parts.append(("и своё: " if chosen["indexes"] else "своё решение: ") + f"«{chosen['text']}»")
+    return "; ".join(parts)
 
 
 def same(first: dict, second: dict) -> bool:
     a, b = first["chosen"], second["chosen"]
     if a["type"] != b["type"]:
         return False
-    if a["type"] == "option":
-        return a["index"] == b["index"]
-    if a["type"] == "multi":
+    if a["type"] == "choice":
         return a["indexes"] == b["indexes"] and " ".join(a["text"].lower().split()) == " ".join(b["text"].lower().split())
-    if a["type"] == "custom":
-        return " ".join(a["value"].lower().split()) == " ".join(b["value"].lower().split())
     return True
 
 
